@@ -203,8 +203,25 @@ that only answers reports.
 ## Your artifact
 
 1. Your three predictions from B1, written *before* B2.
+
+The file should be way larger.
+I think the normalized tables should be faster.
+Only one row will need to change since its a separate table in the no widened version.
+For the widened version, every row that contains customer will need to change.
+
+
 2. Both file sizes, the compression of each wide column, and both Q09 times.
-3. For each prediction: right or wrong, and the evidence that says why. Use
-   the compression column to explain the file size.
-4. Your call from B4 for each of the two uses, in two or three sentences each,
-   citing one of your numbers.
+
+noidx = 13,580 KB
+wide = 25,612 KB
+
+Q09 for first query .053 seconds
+Q09 for second query .051 seconds
+
+3. For each prediction: right or wrong, and the evidence that says why. Use the compression column to explain the file size.
+
+   Right, Right, Right, Right
+
+4. Your call from B4 for each of the two uses, in two or three sentences each, citing one of your numbers.
+
+   No the wide table was not worth it here.

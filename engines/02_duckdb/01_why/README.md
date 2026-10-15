@@ -102,11 +102,11 @@ And two motivations that have nothing to do with speed:
 
 | Queries | What they do | DuckDB vs. SQLite: your prediction |
 | ------- | ------------ | ---------------------------------- |
-| Q01, Q02 | fetch one customer; one page of products | |
-| Q03, Q04, Q05, Q06 | a date range; one customer's history; a count; streaks | |
-| Q07–Q10 | leaderboard, anti-join, revenue by state, top products | |
-| Q13, Q14 | whole-history reports | |
-| Q15 | insert one purchase | |
+| Q01, Q02 | fetch one customer; one page of products | SQlite is faster barely |
+| Q03, Q04, Q05, Q06 | a date range; one customer's history; a count; streaks | Duck DB |
+| Q07–Q10 | leaderboard, anti-join, revenue by state, top products | Duck DB |
+| Q13, Q14 | whole-history reports | Duckdb |
+| Q15 | insert one purchase | SQLite |
 
 Then read DuckDB's column of the [concept map](../../../reference/concept_map.md) and
 [concept_answers.md](../concept_answers.md).

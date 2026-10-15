@@ -49,9 +49,9 @@ about DuckDB, or about SQLite, forced the change?
 | Query    | What changed      | Why                                                                                     |
 | -------- | ----------------- | --------------------------------------------------------------------------------------- |
 | all      | `:name` → `$name` | Each driver's placeholder style. Python's `sqlite3` uses `:name`; `duckdb` uses `$name` |
-| Q06      |                   |                                                                                         |
-| Q10      |                   |                                                                                         |
-| Q13, Q14 |                   |                                                                                         |
+| Q06      | `day - CAST` → `julianday`   |  Don't need julianday for duckdb                                |
+| Q10      | `Group by clauses` | Duckdb requires every non-aggregated column in group by clause    |
+| Q13, Q14 | `strftime()` → `substr()` |   Duckby has strftime()   |
 
 Then answer: **which SQLite-isms from the
 [SQLite list](../../01_sqlite/06_queries/README.md#sqlite-isms-to-watch-for-when-you-port-these-later)
