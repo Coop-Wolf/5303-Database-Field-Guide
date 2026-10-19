@@ -32,7 +32,7 @@ from __future__ import annotations
 import os
 import random
 from datetime import date
-
+import typing
 from fastapi import Depends, FastAPI, Query
 from fastapi.responses import RedirectResponse
 
@@ -85,6 +85,9 @@ def q02_products(limit: int = 50, offset: int = 0, db: ExpDB = Depends(get_exp_d
 #   SQL:          06_queries/q03.sql  (uses :start and :end)
 #   A request with a missing or non-date value should get a 422 and never
 #   reach the database.
+@app.get("/purchases")
+def q03_purchases(start: date, end: date, db: ExpDB = Depends(get_exp_db),):
+    return run_query(db, "Q03", {"start": start, "end": end})
 
 
 @app.get("/customers/purchases")
@@ -113,7 +116,9 @@ def q07_leaderboard(start: date, end: date, db: ExpDB = Depends(get_exp_db)):
 #   state is a two-letter code like TX. Anything else ("Texas", "tx")
 #   should get a 422. Query() can check a pattern: see how get_exp_db in
 #   experiment.py validates ?db=.
-
+@app.get("/products/dead")
+def q08_products_dead(state: str = Query(pattern=r"^[A-Z]{2}$"),db: ExpDB = Depends(get_exp_db),):
+    return run_query(db, "Q08", {"state": state})
 
 @app.get("/stats/revenue_by_state")
 def q09_revenue_by_state(db: ExpDB = Depends(get_exp_db)):
@@ -178,7 +183,9 @@ def q14_cube_fast(start: date, end: date, min_purchases: int = Query(10, ge=1),
 #   Success answers 201, not 200. A body that doesn't fit the model should
 #   get a 422. A parameter typed as a Pydantic model is read from the JSON
 #   body instead of the query string.
-
+@app.post("/purchases", status_code=201)
+def q15_insert_purchase(purchase: NewPurchase,db: ExpDB = Depends(get_exp_db),):
+    return run_write(db, "Q15", purchase.model_dump())
 
 @app.post("/purchases/fast", status_code=201)
 def q15_insert_purchases_fast(purchases: list[NewPurchase], db: ExpDB = Depends(get_exp_db)):
