@@ -20,10 +20,10 @@ cd lessons/14-redis-cache
 python api.py
 ```
 
-| Setting         | Default                      |
-| --------------- | ---------------------------- |
-| `REDIS_URL`     | `redis://localhost:6379/0`   |
-| `CACHE_SECONDS` | `30`                         |
+| Setting         | Default                    |
+| --------------- | -------------------------- |
+| `REDIS_URL`     | `redis://localhost:6379/0` |
+| `CACHE_SECONDS` | `30`                       |
 
 ## Cache-aside
 
@@ -137,13 +137,13 @@ response shape stays `[{id, name, price}, …]` and nothing else that calls
 
 Other page details:
 
-| Code                                     | Meaning                                                      |
-| ---------------------------------------- | ------------------------------------------------------------ |
-| `init()` in the `x-data` object          | Alpine calls a method named `init` automatically; no `x-init` needed |
+| Code                                                      | Meaning                                                                          |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `init()` in the `x-data` object                           | Alpine calls a method named `init` automatically; no `x-init` needed             |
 | `:class="{ 'bg-green-100 …': cacheStatus === 'HIT', … }"` | Object form of `:class`: each class string is applied when its condition is true |
-| `<details><summary>…</summary>…</details>` | Built-in HTML collapsible section                          |
-| `max-h-64 overflow-auto`                 | A scrolling results box at most 16rem tall                   |
-| `request(method, url, body)`             | One fetch helper for GET, POST and PATCH                     |
+| `<details><summary>…</summary>…</details>`                | Built-in HTML collapsible section                                                |
+| `max-h-64 overflow-auto`                                  | A scrolling results box at most 16rem tall                                       |
+| `request(method, url, body)`                              | One fetch helper for GET, POST and PATCH                                         |
 
 ## Watch it in `redis-cli`
 

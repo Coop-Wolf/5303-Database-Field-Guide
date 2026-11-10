@@ -28,7 +28,9 @@ db = client[os.getenv("MONGO_DB", "noidx_10k")]
 # A short timeout, so a missing Redis costs a fraction of a second, not a hang.
 cache = redis.Redis.from_url(
     os.getenv("REDIS_URL", "redis://localhost:6379/0"),
-    decode_responses=True, socket_connect_timeout=0.3, socket_timeout=0.3,
+    decode_responses=True,
+    socket_connect_timeout=0.3,
+    socket_timeout=0.3,
 )
 CACHE_SECONDS = int(os.getenv("CACHE_SECONDS", "30"))
 
@@ -36,6 +38,7 @@ app = FastAPI()
 
 
 # ---- Cache helpers. Every Redis call is wrapped: if Redis fails, carry on without it. ----
+
 
 def cache_get(key):
     try:
@@ -68,9 +71,12 @@ def invalidate_product_searches():
 
 # ---- Integer ids from the counters collection ----
 
+
 def ensure_counter(name, current_max):
     """Create a counter starting at current_max, unless it already exists."""
-    db.counters.update_one({"_id": name}, {"$setOnInsert": {"seq": current_max}}, upsert=True)
+    db.counters.update_one(
+        {"_id": name}, {"$setOnInsert": {"seq": current_max}}, upsert=True
+    )
 
 
 def next_id(name, count=1):
@@ -85,17 +91,25 @@ def next_id(name, count=1):
 last_customer = db.customers.find_one({}, {"_id": 1}, sort=[("_id", -1)])
 ensure_counter("customer_id", last_customer["_id"] if last_customer else 0)
 
-top_card = next(db.customers.aggregate([
-    {"$unwind": "$cards"},
-    {"$group": {"_id": None, "max": {"$max": "$cards.card_id"}}},
-]), None)
+top_card = next(
+    db.customers.aggregate(
+        [
+            {"$unwind": "$cards"},
+            {"$group": {"_id": None, "max": {"$max": "$cards.card_id"}}},
+        ]
+    ),
+    None,
+)
 ensure_counter("card_id", top_card["max"] if top_card else 0)
 
 
 # ---- Request model: what a POST /api/customers body must look like ----
 
+
 class NewCustomer(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True)  # trim spaces from every string
+    model_config = ConfigDict(
+        str_strip_whitespace=True
+    )  # trim spaces from every string
 
     first_name: str = Field(min_length=1, max_length=40)
     last_name: str = Field(min_length=1, max_length=40)
@@ -116,7 +130,9 @@ class NewPurchase(BaseModel):
     customer_id: int
     card_id: int
     product_id: int
-    quantity: int = Field(ge=1, le=10)  # ge = greater than or equal, le = less than or equal
+    quantity: int = Field(
+        ge=1, le=10
+    )  # ge = greater than or equal, le = less than or equal
 
 
 def customer_out(doc):
@@ -130,14 +146,22 @@ def customer_detail_out(doc):
         "email": doc["email"],
         "state_code": doc["state_code"],
         "cards": [
-            {"card_id": c["card_id"], "card_type": c["card_type"], "last4": c["card_number"][-4:]}
+            {
+                "card_id": c["card_id"],
+                "card_type": c["card_type"],
+                "last4": c["card_number"][-4:],
+            }
             for c in doc["cards"]
         ],
     }
 
 
 def product_out(doc):
-    return {"id": doc["_id"], "name": doc["product_name"], "price": str(doc["unit_price"])}
+    return {
+        "id": doc["_id"],
+        "name": doc["product_name"],
+        "price": str(doc["unit_price"]),
+    }
 
 
 def purchase_out(doc):
@@ -157,7 +181,9 @@ def page():
 
 @app.get("/api/customers")
 def get_customers():
-    docs = db.customers.find({}, {"first_name": 1, "last_name": 1}).sort([("last_name", 1), ("first_name", 1)])
+    docs = db.customers.find({}, {"first_name": 1, "last_name": 1}).sort(
+        [("last_name", 1), ("first_name", 1)]
+    )
     return [customer_out(doc) for doc in docs]
 
 
@@ -200,13 +226,19 @@ def get_products(
 
     price = {}
     if min_price is not None:
-        price["$gte"] = Decimal128(min_price)  # compare like with like: Decimal128 to Decimal128
+        price["$gte"] = Decimal128(
+            min_price
+        )  # compare like with like: Decimal128 to Decimal128
     if max_price is not None:
         price["$lte"] = Decimal128(max_price)
     if price:
         query["unit_price"] = price
 
-    docs = db.products.find(query, {"product_name": 1, "unit_price": 1}).sort(SORTS[sort]).limit(limit)
+    docs = (
+        db.products.find(query, {"product_name": 1, "unit_price": 1})
+        .sort(SORTS[sort])
+        .limit(limit)
+    )
     results = [product_out(doc) for doc in docs]
 
     # 3. Store the answer for next time, then return it.
@@ -227,14 +259,18 @@ def get_product(product_id: int):
         raise HTTPException(status_code=404, detail=f"Product {product_id} not found")
 
     product = product_out(doc)
-    product["times_purchased"] = db.purchases.count_documents({"product_id": product_id})
+    product["times_purchased"] = db.purchases.count_documents(
+        {"product_id": product_id}
+    )
     return product
 
 
 # NEW (development only): change a product's price, to watch cache invalidation happen.
 @app.patch("/api/products/{product_id}/price")
 def change_price(product_id: int, change: PriceChange):
-    result = db.products.update_one({"_id": product_id}, {"$set": {"unit_price": Decimal128(change.price)}})
+    result = db.products.update_one(
+        {"_id": product_id}, {"$set": {"unit_price": Decimal128(change.price)}}
+    )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail=f"Product {product_id} not found")
 
@@ -258,7 +294,11 @@ def get_customer_purchases(customer_id: int):
     if db.customers.find_one({"_id": customer_id}, {"_id": 1}) is None:
         raise HTTPException(status_code=404, detail=f"Customer {customer_id} not found")
 
-    docs = db.purchases.find({"customer_id": customer_id}).sort([("purchase_date", -1), ("_id", -1)]).limit(10)
+    docs = (
+        db.purchases.find({"customer_id": customer_id})
+        .sort([("purchase_date", -1), ("_id", -1)])
+        .limit(10)
+    )
     return [purchase_out(doc) for doc in docs]
 
 
@@ -268,7 +308,9 @@ def get_customer_purchases(customer_id: int):
 def create_customer(new: NewCustomer):
     email = new.email.lower()
     if db.customers.find_one({"email": email}, {"_id": 1}):
-        raise HTTPException(status_code=409, detail=f"A customer with email {email} already exists")
+        raise HTTPException(
+            status_code=409, detail=f"A customer with email {email} already exists"
+        )
 
     doc = {
         "_id": next_id("customer_id"),
@@ -279,7 +321,11 @@ def create_customer(new: NewCustomer):
         "zipcode": new.zipcode,
         "state_code": new.state_code,
         "cards": [
-            {"card_id": next_id("card_id"), "card_type": new.card_type, "card_number": new.card_number},
+            {
+                "card_id": next_id("card_id"),
+                "card_type": new.card_type,
+                "card_number": new.card_number,
+            },
         ],
     }
     db.customers.insert_one(doc)
@@ -294,23 +340,34 @@ def create_purchase(new: NewPurchase):
     # 2. Confirm the customer, the card and the product exist, and that the card is the customer's.
     customer = db.customers.find_one({"_id": new.customer_id})
     if customer is None:
-        raise HTTPException(status_code=404, detail=f"Customer {new.customer_id} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Customer {new.customer_id} not found"
+        )
 
     card = next((c for c in customer["cards"] if c["card_id"] == new.card_id), None)
     if card is None:
-        raise HTTPException(status_code=400, detail=f"Card {new.card_id} does not belong to this customer")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Card {new.card_id} does not belong to this customer",
+        )
 
     product = db.products.find_one({"_id": new.product_id})
     if product is None:
-        raise HTTPException(status_code=404, detail=f"Product {new.product_id} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Product {new.product_id} not found"
+        )
 
     # 3. The authoritative price comes from the database, never from the request.
-    unit_price = product["unit_price"].to_decimal()  # Decimal128 -> Python Decimal, for exact math
+    unit_price = product[
+        "unit_price"
+    ].to_decimal()  # Decimal128 -> Python Decimal, for exact math
     total = unit_price * new.quantity
 
     # In noidx_10k, department is recorded on each purchase, not on the product.
     # Reuse the department this product was most recently sold under.
-    last_sale = db.purchases.find_one({"product_id": new.product_id}, {"department": 1}, sort=[("purchase_date", -1)])
+    last_sale = db.purchases.find_one(
+        {"product_id": new.product_id}, {"department": 1}, sort=[("purchase_date", -1)]
+    )
     department = last_sale["department"] if last_sale else "General"
 
     # 4. One purchase document per unit, matching the existing data. Reserve all the ids at once.
@@ -323,9 +380,11 @@ def create_purchase(new: NewPurchase):
             "card_id": card["card_id"],
             "product_id": product["_id"],
             "department": department,
-            "amount": Decimal128(unit_price),       # the price AT PURCHASE TIME
+            "amount": Decimal128(unit_price),  # the price AT PURCHASE TIME
             "purchase_date": now,
-            "product_name": product["product_name"],  # copied, so history survives a rename
+            "product_name": product[
+                "product_name"
+            ],  # copied, so history survives a rename
             "state_code": customer["state_code"],
             "card_type": card["card_type"],
         }
@@ -346,4 +405,4 @@ def create_purchase(new: NewPurchase):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8080)
