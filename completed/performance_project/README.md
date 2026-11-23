@@ -1,81 +1,164 @@
-# 5303 Database Field Guide
+# Completed structure: Performance Project (SQLite vs. DuckDB)
 
-Five database engines, one dataset, one set of questions. You load the same
-`store` data into SQLite, DuckDB, PostgreSQL, MongoDB, and Redis, query it
-through the same API, measure what each engine does, and decide, with your
-own numbers, which engine fits which job.
+## The structure
 
-The goal isn't to write the biggest query. It's to understand why one query
-beats another, when two queries are really the same, and why some engines
-suit some problems better than others.
-
-## Start here
-
-1. **[setup/](setup/)**: install Git, Python, Docker, QueryMux, and an editor.
-2. **[engines/00_foundations/](engines/00_foundations/)**: vocabulary and first SQL.
-3. **[engines/01_sqlite/](engines/01_sqlite/)**: the first engine, and the baseline
-   every later engine is compared against.
-
-Then [02_duckdb](engines/02_duckdb/) (embedded like SQLite, but stores data
-by column), [03_postgres](engines/03_postgres/) (the first server),
-[04_mongodb](engines/04_mongodb/), and [05_redis](engines/05_redis/).
-
-## How every unit works
-
-Each engine unit has the same nine sections, so you always know where you
-are:
-
-| #  | Section              | Question                                             |
-| -- | -------------------- | ---------------------------------------------------- |
-| 01 | Why it exists        | What was it built for, and what does it give up?     |
-| 02 | Install & verify     | Can I run it and prove it's running?                 |
-| 03 | Connect three ways   | The same "hello" from the CLI, QueryMux, and Python  |
-| 04 | Model the data       | How does `store` want to look in this engine?        |
-| 05 | Load it              | Get the data in, reproducibly                        |
-| 06 | Run the query catalog | Q01–Q15 in this engine's language                   |
-| 07 | Explain & measure    | What did it do, and how long did it take?            |
-| 08 | Concurrency & load   | How does it behave when many requests arrive at once? |
-| 09 | When to choose it    | Yes or no on standard scenarios, citing your numbers |
-
-The setup steps hand you commands. The later sections ask you for something
-you can't paste: a prediction, a number, an explanation, or a decision.
-
-## What's where
-
-| Folder / file                        | Holds                                                                     |
-| ------------------------------------ | ------------------------------------------------------------------------- |
-| [setup/](setup/)                     | Install once: Git, Python, Docker, QueryMux, an editor                    |
-| [engines/](engines/)                 | One folder per engine, nine sections each                                 |
-| [tracks/](tracks/)                   | Spatial, vector, and distributed comparisons                              |
-| [lab/](lab/README.md)                | The measurement API, driver, load test, fairness rules, FINDINGS template |
-| [datasets/](datasets/README.md)      | The `store` data, its query catalog, the generator, and Armageddon        |
-| [reference/](reference/README.md)    | Look-it-up material: the concept map, patterns, topics, naming conventions |
-| [assignments/](assignments/)         | Assignments and the final project                                         |
-| [STRUCTURE.md](STRUCTURE.md)         | Naming conventions and where new files go                                 |
-
-## Quick start
-
-Each block starts from the repo root.
-
-```bash
-# the classroom database: 1,000 rows, ready in a second
-cd engines/01_sqlite/05_load
-sqlite3 store_classroom.db ".read rebuild.sql"
+```
+Performance_Project/
+├── README.md                    (required)  index: your machine, DATA_DIR, links to each FINDINGS
+├── .gitignore                   (required)  keeps databases, exports, and .venv out
+│
+├── sqlite/                      unit 01
+│   ├── FINDINGS_sqlite.md       (required)  the course template, filled in: §7, §8, §9
+│   ├── 01_why.md                (required)  one paragraph
+│   ├── 02_install.md            (required)  the three verify outputs
+│   ├── 03_connect.md            (required)  hello from CLI, QueryMux, Python
+│   ├── 04_model.md              (required)  B1 grouping, how it changed, row counts, 3 decisions
+│   ├── your_turn_checks.sql     (required)  your copy, all 22 checks completed
+│   ├── my_schema.sql            (required)  your people_products schema
+│   ├── my_load.sql              (required)  the loader you adapted
+│   ├── 05_load.md               (required)  build commands + row counts
+│   └── 06_queries.md            (required)  pytest output + /docs and /fast check
+│
+├── duckdb/                      unit 02
+│   ├── FINDINGS_duckdb.md       (required)  the template, filled in, plus the "both" scenario
+│   ├── 01_why.md                (required)  paragraph + predictions (written before measuring)
+│   ├── 03_connect.md            (required)  hello x3 + DESCRIBE vs .schema
+│   ├── 04_model.md              (required)  predictions, sizes, compression, Q09 times, B4 calls
+│   ├── 05_load.md               (required)  builds, sniffer, Parquet vs. CSV
+│   └── 06_queries.md            (required)  translation table, /docs check, one shortcut
+│
+└── api/                         your copy of the field guide's lab/api/starter_code
+    ├── pyproject.toml               copied
+    ├── .env.example                 copied
+    ├── driver.py                    copied
+    ├── app/
+    │   ├── __init__.py              copied
+    │   ├── main.py              (required)  YOUR routes: Q03, Q08, Q15
+    │   ├── experiment.py            copied (SQLite harness)
+    │   ├── experiment_duckdb.py     copied (ENGINE=duckdb)
+    │   └── models.py                copied
+    ├── tests/
+    │   ├── conftest.py              copied
+    │   ├── test_smoke.py            copied
+    │   └── test_your_routes.py      copied: must pass
+    ├── results_sqlite/          (required, generated)  full driver run on SQLite
+    │   ├── results.csv
+    │   └── results.md
+    └── results_duckdb/          (required, generated)  full driver run on DuckDB
+        ├── results.csv
+        └── results.md
 ```
 
-```bash
-# the experiment databases: 10k, 100k, 1m rows, ~10 seconds
-python3 datasets/store/generator/make_dbs.py
-```
+DuckDB has no `02_install.md` because its 02_install section has no
+*Your artifact*. Sections 07–09 have no separate files for either engine:
+their artifacts go inside the FINDINGS file, which the course template
+already lays out.
+
+Because `api/` lives outside the field guide clone, set `FIELD_GUIDE` so it
+can find the SQL files:
 
 ```bash
-# the measurement API
-cd lab/api/starter_code
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-python -m app.main                                # http://127.0.0.1:8001/docs
+export FIELD_GUIDE="$HOME/5303/5303-Database-Field-Guide/assignments/Performance_Project"
 ```
 
-> **Is this repo in iCloud Drive, Dropbox, or OneDrive?** Keep the generated
-> databases out of it: set `DATA_DIR` (see the
-> [generator README](datasets/store/generator/README.md)).
+## How the files map to the nine sections
+
+| Section | SQLite | DuckDB |
+| ------- | ------ | ------ |
+| 01 Why it exists | `sqlite/01_why.md` | `duckdb/01_why.md` (predictions are checked in §7) |
+| 02 Install & verify | `sqlite/02_install.md` | — |
+| 03 Connect three ways | `sqlite/03_connect.md` | `duckdb/03_connect.md` |
+| 04 Model the data | `sqlite/04_model.md`, `your_turn_checks.sql`, `my_schema.sql`, `my_load.sql` | `duckdb/04_model.md` |
+| 05 Load it | `sqlite/05_load.md` | `duckdb/05_load.md` |
+| 06 Query catalog | `api/app/main.py`, `sqlite/06_queries.md` | `duckdb/06_queries.md` |
+| 07 Explain & measure | `api/results_sqlite/`, FINDINGS *Results (§7)* | `api/results_duckdb/`, FINDINGS *Results (§7)* |
+| 08 Concurrency & load | FINDINGS *Load (§8)* | FINDINGS *Load (§8)* |
+| 09 When to choose it | FINDINGS *When to choose it (§9)*: 7 verdicts | FINDINGS §9: 9 verdicts + "both" |
+
+## Your `README.md`
+
+The file you're reading explains the structure. **Your**
+`Performance_Project/README.md` is an index, not a report. It holds:
+
+- Your machine (CPU, RAM, disk) and OS, since every number depends on them.
+- The `DATA_DIR` (and `DUCKDB_DIR`, if set) you used, so the paths in your
+  commands make sense to a reader.
+- A link table:
+
+  | Unit   | FINDINGS                     | Driver results                   |
+  | ------ | ---------------------------- | -------------------------------- |
+  | SQLite | `sqlite/FINDINGS_sqlite.md`  | `api/results_sqlite/results.md`  |
+  | DuckDB | `duckdb/FINDINGS_duckdb.md`  | `api/results_duckdb/results.md`  |
+
+## Acceptable variations
+
+**Sections 01–06 in one file.** Instead of one `.md` per section, you may
+put the §1–§6 artifacts at the top of the FINDINGS file under headings like
+`## §1 Why it exists`, above the template's *Environment* section. Either
+works; don't split one section across both.
+
+**File names.**
+
+| Shown | Also fine |
+| ----- | --------- |
+| `01_why.md` ... `06_queries.md` | `s01_why.md`, `notes_01_why.md`, `why.md`. Keep the section number somewhere |
+| `my_load.sql` | `my_loader.sql`, `load_people_products.sql`, or a Python loader (`my_load.py`); a `my_rebuild.sql` that runs schema + load is a nice extra |
+| `api/` | `measurement_api/`, `starter_code/`, as long as your `README.md` says where it is |
+| `results_sqlite/` | `results/` from the SQLite unit's first run, if you didn't rerun with `--out results_sqlite` in DuckDB §7. Results from a full run must exist for both engines either way |
+
+**Extra files that are welcome.**
+
+- `duckdb/shortcut.sql` (or `q09_shortcut.sql`, ...): the DuckDB shortcut
+  query from §6 as its own file, referenced from `06_queries.md`.
+- Raw `loadtest.py` output saved as text, e.g. `sqlite/loadtest_runs.txt`.
+  The summary table and the exact error text still belong in FINDINGS.
+- The optional
+  [triggers and procedures](../../assignments/performance_project/engines/01_sqlite/05_load/triggers_and_procedures.md)
+  walkthrough's `sql/*.sql` scripts. The walkthrough builds them in a
+  git-ignored folder; copy them into `sqlite/sql/` if you want to keep them.
+- Screenshots of `/docs` or QueryMux, in a `screenshots/` folder inside the
+  unit.
+
+**Later units.** If PostgreSQL and MongoDB are assigned, add `postgres/` and
+`mongodb/` with the same pattern (`FINDINGS_postgres.md`, `01_why.md`, ...),
+plus `api/results_postgres/` and `api/results_mongodb/`. Postgres §4 adds a
+`roles.sql`. Redis and the tracks are still stubs.
+
+## What must NOT be in the folder
+
+The `.gitignore` here covers these, but check `git status` anyway:
+
+- Any `.db`, `.duckdb`, `.duckdb.wal`, `-wal`, or `-shm` file, including
+  `writes.db` / `writes.duckdb` from §8. They rebuild from the loaders and
+  `make_dbs.py`.
+- `*.parquet`, `purchases_1m.csv`, and `export_10k/` from DuckDB §5.
+- `.venv/`, `__pycache__/`, `*.egg-info/`, `.pytest_cache/`.
+- A `.env` with real settings (commit `.env.example` instead).
+
+Don't edit files inside the field guide clone either. If you did, `git stash`
+there and copy your version into `Performance_Project/`.
+
+## Common mistakes the structure helps you catch
+
+- FINDINGS with answers that cite no number or plan line.
+- `results.md` from a `--sizes 10k` quick check instead of a full run.
+- `main.py` with the three `TODO`s still there (or `test_your_routes.py`
+  edited to pass).
+- DuckDB §1 predictions written after the measurements. Commit `01_why.md`
+  before you run §7; your commit history shows it.
+- Only one engine's `results_*` folder: the DuckDB §7 comparison needs both.
+
+## Check your folder
+
+The field guide's [check_completed.py](../../check_completed.py) compares
+your folder with this one and looks inside each file for work of your own.
+Run it from your course repo:
+
+```bash
+cd ~/5303/my-repo
+python ~/5303/5303-Database-Field-Guide/check_completed.py performance
+```
+
+✅ means the file is there with content of your own, 🟡 is worth a look,
+❌ is missing or still the template, and ⚪ is optional. It checks that your
+work is **there**, not that it's **right**.
