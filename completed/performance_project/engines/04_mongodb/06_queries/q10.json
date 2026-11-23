@@ -1,0 +1,54 @@
+{
+  "//": [
+    "Q10 — Top 10 products by revenue",
+    "What it answers: \"Which 10 products brought in the most money?\"",
+    "Route:           GET /products/top   (params: —; every route also takes db=)",
+    "Pattern:         plan basics (see 07_explain/)",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "product_name is copied into every purchase, and $first picks one per group.",
+    "What would this report show if a product were renamed tomorrow? What would",
+    "SQLite's show?"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$group": {
+        "_id": "$product_id",
+        "product_name": {
+          "$first": "$product_name"
+        },
+        "num_purchases": {
+          "$sum": 1
+        },
+        "revenue": {
+          "$sum": "$amount"
+        }
+      }
+    },
+    {
+      "$sort": {
+        "revenue": -1,
+        "_id": 1
+      }
+    },
+    {
+      "$limit": 10
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "product_id": "$_id",
+        "product_name": 1,
+        "num_purchases": 1,
+        "revenue": {
+          "$round": [
+            "$revenue",
+            2
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "//": [
+    "Q06 — A customer's purchase streaks",
+    "What it answers: \"What were this customer's longest runs of buying something on consecutive days?\"",
+    "Route:           GET /customers/streaks   (params: customer_id; every route also takes db=)",
+    "Pattern:         gaps_and_islands",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "The same gaps-and-islands idea as SQL, written as pipeline stages: $group,",
+    "$setWindowFields, $dateSubtract. Which stage reads the documents, how many",
+    "does it read, and is the rest of the pipeline expensive?"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$match": {
+        "customer_id": "{{customer_id}}"
+      }
+    },
+    {
+      "$group": {
+        "_id": "$purchase_date"
+      }
+    },
+    {
+      "$setWindowFields": {
+        "sortBy": {
+          "_id": 1
+        },
+        "output": {
+          "rn": {
+            "$documentNumber": {}
+          }
+        }
+      }
+    },
+    {
+      "$group": {
+        "_id": {
+          "$dateSubtract": {
+            "startDate": "$_id",
+            "unit": "day",
+            "amount": "$rn"
+          }
+        },
+        "streak_start": {
+          "$min": "$_id"
+        },
+        "streak_end": {
+          "$max": "$_id"
+        },
+        "days": {
+          "$sum": 1
+        }
+      }
+    },
+    {
+      "$match": {
+        "days": {
+          "$gte": 2
+        }
+      }
+    },
+    {
+      "$sort": {
+        "days": -1,
+        "streak_start": 1
+      }
+    },
+    {
+      "$limit": 10
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "streak_start": 1,
+        "streak_end": 1,
+        "days": 1
+      }
+    }
+  ]
+}

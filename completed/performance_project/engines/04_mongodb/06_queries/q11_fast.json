@@ -1,0 +1,31 @@
+{
+  "//": [
+    "Q11 (fast) — Deep pagination: `OFFSET` vs. keyset",
+    "What it answers: \"Show me page 18,001 of all purchases (50 per page).\"",
+    "Route:           GET /purchases/page/fast   (params: after_id; every route also takes db=)",
+    "Pattern:         keyset_pagination",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "skip examines 900,050 index keys to return 50, then fetches only the 50",
+    "documents. Compare with the fast version, and with OFFSET in SQLite and",
+    "PostgreSQL."
+  ],
+  "find": "purchases",
+  "filter": {
+    "_id": {
+      "$gt": "{{after_id}}"
+    }
+  },
+  "projection": {
+    "_id": 0,
+    "purchase_id": "$_id",
+    "customer_id": 1,
+    "product_id": 1,
+    "amount": 1,
+    "purchase_date": 1
+  },
+  "sort": {
+    "_id": 1
+  },
+  "limit": 50
+}

@@ -1,0 +1,31 @@
+{
+  "//": [
+    "Q04 — One customer's purchase history",
+    "What it answers: \"Show me this customer's 100 most recent purchases, with product names.\"",
+    "Route:           GET /customers/purchases   (params: customer_id; every route also takes db=)",
+    "Pattern:         plan basics (see 07_explain/)",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "The idx_* plan examines 28,094 documents to return 100. Which index does it",
+    "use, and what does it have to do with all those documents? Which compound",
+    "index would let it read only 100? (Look up MongoDB's 'ESR' rule: Equality,",
+    "Sort, Range.)"
+  ],
+  "find": "purchases",
+  "filter": {
+    "customer_id": "{{customer_id}}"
+  },
+  "projection": {
+    "_id": 0,
+    "purchase_id": "$_id",
+    "purchase_date": 1,
+    "product_name": 1,
+    "department": 1,
+    "amount": 1
+  },
+  "sort": {
+    "purchase_date": -1,
+    "_id": -1
+  },
+  "limit": 100
+}

@@ -1,0 +1,35 @@
+{
+  "//": [
+    "Q03 — Purchases in a date range",
+    "What it answers: \"Show me the first 100 purchases from the first week of March 2025.\"",
+    "Route:           GET /purchases   (params: start, end; every route also takes db=)",
+    "Pattern:         plan basics (see 07_explain/)",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "In idx_1m the plan reads 7,296 documents through purchase_date_1 to return",
+    "100, then SORTs them in memory. Why can't it stop after 100? Create an index",
+    "on {purchase_date: 1, _id: 1} in a copy (see 07_explain/) and compare",
+    "'examined' before and after."
+  ],
+  "find": "purchases",
+  "filter": {
+    "purchase_date": {
+      "$gte": "{{start:date}}",
+      "$lt": "{{end:date}}"
+    }
+  },
+  "projection": {
+    "_id": 0,
+    "purchase_id": "$_id",
+    "customer_id": 1,
+    "product_id": 1,
+    "department": 1,
+    "amount": 1,
+    "purchase_date": 1
+  },
+  "sort": {
+    "purchase_date": 1,
+    "_id": 1
+  },
+  "limit": 100
+}

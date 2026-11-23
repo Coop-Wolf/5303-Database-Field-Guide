@@ -1,0 +1,75 @@
+{
+  "//": [
+    "Q08 — Products never bought in a state (anti-join)",
+    "What it answers: \"Which products has nobody in Texas ever bought?\"",
+    "Route:           GET /products/dead   (params: state; every route also takes db=)",
+    "Pattern:         anti_joins",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "In SQLite, knowing a purchase's state took joins to customers and zipcodes.",
+    "Here state_code is copied into each purchase. Yet even idx_* scans all",
+    "1,000,000 documents. Which index is missing? Create it in a copy and measure",
+    "again. (The anti_joins pattern page shows another way to write this.)"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$match": {
+        "state_code": "{{state}}"
+      }
+    },
+    {
+      "$group": {
+        "_id": null,
+        "bought": {
+          "$addToSet": "$product_id"
+        }
+      }
+    },
+    {
+      "$lookup": {
+        "from": "products",
+        "let": {
+          "bought": "$bought"
+        },
+        "as": "dead",
+        "pipeline": [
+          {
+            "$match": {
+              "$expr": {
+                "$not": {
+                  "$in": [
+                    "$_id",
+                    "$$bought"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "$sort": {
+              "_id": 1
+            }
+          },
+          {
+            "$limit": 100
+          }
+        ]
+      }
+    },
+    {
+      "$unwind": "$dead"
+    },
+    {
+      "$replaceWith": "$dead"
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "product_id": "$_id",
+        "product_name": 1
+      }
+    }
+  ]
+}

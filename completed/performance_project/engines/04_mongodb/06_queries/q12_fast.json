@@ -1,0 +1,43 @@
+{
+  "//": [
+    "Q12 (fast) — Random sample: `ORDER BY random()` vs. random ids",
+    "What it answers: \"Give me 10 random purchases.\"",
+    "Route:           GET /purchases/sample/fast   (params: — (10 random ids chosen in Python: id1..id10); every route also takes db=)",
+    "Pattern:         random_sampling",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "$sample returned 10 random documents from 1,000,000 in well under a",
+    "millisecond. ORDER BY random() in SQLite needs every row. How does MongoDB",
+    "avoid reading them all, and is every document equally likely? (See the",
+    "random_sampling pattern.) What has to be true about _id for the fast version",
+    "to be fair?"
+  ],
+  "find": "purchases",
+  "filter": {
+    "_id": {
+      "$in": [
+        "{{id1}}",
+        "{{id2}}",
+        "{{id3}}",
+        "{{id4}}",
+        "{{id5}}",
+        "{{id6}}",
+        "{{id7}}",
+        "{{id8}}",
+        "{{id9}}",
+        "{{id10}}"
+      ]
+    }
+  },
+  "projection": {
+    "_id": 0,
+    "purchase_id": "$_id",
+    "customer_id": 1,
+    "product_id": 1,
+    "amount": 1,
+    "purchase_date": 1
+  },
+  "sort": {
+    "_id": 1
+  }
+}

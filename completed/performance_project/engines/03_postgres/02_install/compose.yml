@@ -1,0 +1,30 @@
+# PostgreSQL 18 for the field guide.  From this folder:
+#
+#     docker compose up -d        start (the first run downloads the image)
+#     docker compose ps           running? healthy?
+#     docker compose down         stop, keep the data
+#     docker compose down -v      stop and delete the data
+#
+# Connect with: postgresql://student:student@localhost:5432/course
+
+services:
+  postgres:
+    image: postgres:18            # official image: native on Intel and Apple Silicon
+    container_name: fieldguide-postgres
+    environment:
+      POSTGRES_USER: student      # becomes a superuser inside this container
+      POSTGRES_PASSWORD: student
+      POSTGRES_DB: course
+    ports:
+      - "5432:5432"               # change the left number if 5432 is taken, e.g. "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql   # PostgreSQL 18 images keep data under this folder
+    shm_size: 1gb                 # Docker's 64 MB default is too small for parallel queries
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U student -d course"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

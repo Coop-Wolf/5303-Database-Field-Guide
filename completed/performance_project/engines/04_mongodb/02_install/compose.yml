@@ -1,0 +1,33 @@
+# MongoDB 9 for the field guide: a one-member replica set.  From this folder:
+#
+#     docker compose up -d        start (the first run downloads the image)
+#     docker compose ps           wait for "healthy"
+#     docker compose down         stop, keep the data
+#     docker compose down -v      stop and delete the data
+#
+# Connect with: mongodb://localhost:27017/?directConnection=true
+#
+# Why a replica set with one member? Multi-document transactions (08_concurrency)
+# only work on a replica set. One member is enough to turn them on.
+
+services:
+  mongodb:
+    image: mongo:9                # official image: native on Intel and Apple Silicon
+    container_name: fieldguide-mongodb
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"             # change the left number if 27017 is taken, e.g. "27018:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      # The first time this runs, it creates the replica set; after that, it
+      # just checks that this member is the primary.
+      test: ["CMD", "mongosh", "--quiet", "--eval",
+             "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]}).ok }"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  mongodata:

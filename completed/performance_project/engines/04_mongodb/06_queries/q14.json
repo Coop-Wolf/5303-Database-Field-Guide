@@ -1,0 +1,79 @@
+{
+  "//": [
+    "Q14 — State × department × month report (multi-CTE)",
+    "What it answers: \"For 2025, which (state, department, month) combinations had at least 10 purchases, and which brought in the most revenue?\"",
+    "Route:           GET /reports/cube   (params: start, end, min_purchases; every route also takes db=)",
+    "Pattern:         multi_cte_reports",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "idx_* reads 374,436 documents through purchase_date_1; noidx_* reads all",
+    "1,000,000 with a COLLSCAN. Which is faster at 1m? Why might reading fewer",
+    "documents through an index not win? (SQLite had the same trap; did",
+    "PostgreSQL?)"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$match": {
+        "purchase_date": {
+          "$gte": "{{start:date}}",
+          "$lt": "{{end:date}}"
+        }
+      }
+    },
+    {
+      "$group": {
+        "_id": {
+          "state_code": "$state_code",
+          "department": "$department",
+          "month": {
+            "$dateToString": {
+              "format": "%Y-%m",
+              "date": "$purchase_date"
+            }
+          }
+        },
+        "num_purchases": {
+          "$sum": 1
+        },
+        "revenue": {
+          "$sum": "$amount"
+        }
+      }
+    },
+    {
+      "$match": {
+        "num_purchases": {
+          "$gte": "{{min_purchases}}"
+        }
+      }
+    },
+    {
+      "$sort": {
+        "revenue": -1,
+        "_id.state_code": 1,
+        "_id.department": 1,
+        "_id.month": 1
+      }
+    },
+    {
+      "$limit": 50
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "state_code": "$_id.state_code",
+        "department": "$_id.department",
+        "month": "$_id.month",
+        "num_purchases": 1,
+        "revenue": {
+          "$round": [
+            "$revenue",
+            2
+          ]
+        }
+      }
+    }
+  ]
+}

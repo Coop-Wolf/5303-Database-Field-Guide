@@ -1,0 +1,112 @@
+{
+  "//": [
+    "Q15 — Insert a purchase",
+    "What it answers: Inserts one purchase (three commands: next id, copy fields in, insert) and returns the new row with status 201. If MongoDB refuses the write (a conflict, a missing card or product), it returns 503.",
+    "Route:           POST /purchases   (params: JSON body; every route also takes db=)",
+    "Pattern:         — (see 08_concurrency/)",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "An insert here is three commands (see 'steps'). What does each one do? Which",
+    "one makes every concurrent writer touch the same document? And what happens",
+    "to the copied-in state_code and card_type if the customer moves later?"
+  ],
+  "steps": [
+    {
+      "name": "next_id",
+      "command": {
+        "findAndModify": "counters",
+        "query": {
+          "_id": "purchase_id"
+        },
+        "update": {
+          "$inc": {
+            "seq": 1
+          }
+        },
+        "new": true
+      },
+      "take": {
+        "purchase_id": "value.seq"
+      }
+    },
+    {
+      "name": "copy_in",
+      "command": {
+        "aggregate": "customers",
+        "cursor": {},
+        "pipeline": [
+          {
+            "$match": {
+              "_id": "{{customer_id}}"
+            }
+          },
+          {
+            "$unwind": "$cards"
+          },
+          {
+            "$match": {
+              "cards.card_id": "{{card_id}}"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "products",
+              "pipeline": [
+                {
+                  "$match": {
+                    "_id": "{{product_id}}"
+                  }
+                }
+              ],
+              "as": "p"
+            }
+          },
+          {
+            "$unwind": "$p"
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "state_code": 1,
+              "card_type": "$cards.card_type",
+              "product_name": "$p.product_name"
+            }
+          }
+        ]
+      },
+      "take": {
+        "state_code": "0.state_code",
+        "card_type": "0.card_type",
+        "product_name": "0.product_name"
+      }
+    },
+    {
+      "name": "insert",
+      "command": {
+        "insert": "purchases",
+        "documents": [
+          {
+            "_id": "{{purchase_id}}",
+            "customer_id": "{{customer_id}}",
+            "card_id": "{{card_id}}",
+            "product_id": "{{product_id}}",
+            "department": "{{department}}",
+            "amount": "{{amount:decimal}}",
+            "purchase_date": "{{purchase_date:date}}",
+            "product_name": "{{product_name}}",
+            "state_code": "{{state_code}}",
+            "card_type": "{{card_type}}"
+          }
+        ]
+      }
+    }
+  ],
+  "returning": [
+    "purchase_id",
+    "customer_id",
+    "product_id",
+    "department",
+    "amount",
+    "purchase_date"
+  ]
+}

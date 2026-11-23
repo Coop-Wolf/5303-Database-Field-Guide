@@ -1,0 +1,24 @@
+{
+  "//": [
+    "Q05 — Count purchases in one department",
+    "What it answers: \"How many purchases were in the Games department?\"",
+    "Route:           GET /stats/department_count   (params: department; every route also takes db=)",
+    "Pattern:         counting_and_summaries",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "COUNT_SCAN: 45,799 index keys, 0 documents. What does that stage do that a",
+    "COLLSCAN can't? Compare idx and noidx at 1m."
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$match": {
+        "department": "{{department}}"
+      }
+    },
+    {
+      "$count": "num_purchases"
+    }
+  ]
+}

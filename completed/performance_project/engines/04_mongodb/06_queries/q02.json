@@ -1,0 +1,25 @@
+{
+  "//": [
+    "Q02 — One page of products",
+    "What it answers: \"Show me the first page of the product catalog.\"",
+    "Route:           GET /products   (params: limit, offset; every route also takes db=)",
+    "Pattern:         keyset_pagination",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "50 keys, 50 documents, 50 returned: a perfect ratio. Which index does it",
+    "walk, and why does every collection have it?"
+  ],
+  "find": "products",
+  "filter": {},
+  "projection": {
+    "_id": 0,
+    "product_id": "$_id",
+    "product_name": 1,
+    "unit_price": 1
+  },
+  "sort": {
+    "_id": 1
+  },
+  "skip": "{{offset}}",
+  "limit": "{{limit}}"
+}

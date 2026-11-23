@@ -1,0 +1,47 @@
+{
+  "//": [
+    "Q09 — Revenue by state",
+    "What it answers: \"Total purchases and revenue for each state.\"",
+    "Route:           GET /stats/revenue_by_state   (params: —; every route also takes db=)",
+    "Pattern:         plan basics (see 07_explain/)",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "No join at all: state_code is already in every purchase. It still examines",
+    "every document. Compare with SQLite, which joined three tables. What did",
+    "copying state_code in save, and what does reading whole documents cost?"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$group": {
+        "_id": "$state_code",
+        "num_purchases": {
+          "$sum": 1
+        },
+        "revenue": {
+          "$sum": "$amount"
+        }
+      }
+    },
+    {
+      "$sort": {
+        "revenue": -1,
+        "_id": 1
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "state_code": "$_id",
+        "num_purchases": 1,
+        "revenue": {
+          "$round": [
+            "$revenue",
+            2
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "//": [
+    "Q15 /fast — Insert many purchases in one transaction",
+    "What it answers: Inserts every purchase in the request body, then commits once. Returns the new rows with status 201, or 503 if MongoDB refuses any of them.",
+    "Route:           POST /purchases/fast   (params: JSON array body; every route also takes db=)",
+    "Pattern:         — (see 08_concurrency/)",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "The same three steps for every purchase in the batch, inside one multi-",
+    "document transaction. What happens when 20 batches run at once, given that",
+    "every one of them increments the same counter? (Section 8, run E.)"
+  ],
+  "steps": [
+    {
+      "name": "next_id",
+      "command": {
+        "findAndModify": "counters",
+        "query": {
+          "_id": "purchase_id"
+        },
+        "update": {
+          "$inc": {
+            "seq": 1
+          }
+        },
+        "new": true
+      },
+      "take": {
+        "purchase_id": "value.seq"
+      }
+    },
+    {
+      "name": "copy_in",
+      "command": {
+        "aggregate": "customers",
+        "cursor": {},
+        "pipeline": [
+          {
+            "$match": {
+              "_id": "{{customer_id}}"
+            }
+          },
+          {
+            "$unwind": "$cards"
+          },
+          {
+            "$match": {
+              "cards.card_id": "{{card_id}}"
+            }
+          },
+          {
+            "$lookup": {
+              "from": "products",
+              "pipeline": [
+                {
+                  "$match": {
+                    "_id": "{{product_id}}"
+                  }
+                }
+              ],
+              "as": "p"
+            }
+          },
+          {
+            "$unwind": "$p"
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "state_code": 1,
+              "card_type": "$cards.card_type",
+              "product_name": "$p.product_name"
+            }
+          }
+        ]
+      },
+      "take": {
+        "state_code": "0.state_code",
+        "card_type": "0.card_type",
+        "product_name": "0.product_name"
+      }
+    },
+    {
+      "name": "insert",
+      "command": {
+        "insert": "purchases",
+        "documents": [
+          {
+            "_id": "{{purchase_id}}",
+            "customer_id": "{{customer_id}}",
+            "card_id": "{{card_id}}",
+            "product_id": "{{product_id}}",
+            "department": "{{department}}",
+            "amount": "{{amount:decimal}}",
+            "purchase_date": "{{purchase_date:date}}",
+            "product_name": "{{product_name}}",
+            "state_code": "{{state_code}}",
+            "card_type": "{{card_type}}"
+          }
+        ]
+      }
+    }
+  ],
+  "returning": [
+    "purchase_id",
+    "customer_id",
+    "product_id",
+    "department",
+    "amount",
+    "purchase_date"
+  ]
+}

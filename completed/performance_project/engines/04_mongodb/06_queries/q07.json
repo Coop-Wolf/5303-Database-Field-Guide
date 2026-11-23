@@ -1,0 +1,67 @@
+{
+  "//": [
+    "Q07 — 90-day spending leaderboard",
+    "What it answers: \"Who were the top 20 spenders in the last 90 days, and what rank is each?\"",
+    "Route:           GET /stats/leaderboard   (params: start, end; every route also takes db=)",
+    "Pattern:         window_ranking",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "Find PROJECTION_COVERED in the idx_* plan and the number of documents",
+    "examined. What does 'covered' mean here? Then why is the index only about 3x",
+    "faster than noidx, not 100x?"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$match": {
+        "purchase_date": {
+          "$gte": "{{start:date}}",
+          "$lt": "{{end:date}}"
+        }
+      }
+    },
+    {
+      "$group": {
+        "_id": "$customer_id",
+        "total": {
+          "$sum": "$amount"
+        }
+      }
+    },
+    {
+      "$setWindowFields": {
+        "sortBy": {
+          "total": -1
+        },
+        "output": {
+          "rank": {
+            "$rank": {}
+          }
+        }
+      }
+    },
+    {
+      "$sort": {
+        "total": -1,
+        "_id": 1
+      }
+    },
+    {
+      "$limit": 20
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "customer_id": "$_id",
+        "total": {
+          "$round": [
+            "$total",
+            2
+          ]
+        },
+        "rank": 1
+      }
+    }
+  ]
+}

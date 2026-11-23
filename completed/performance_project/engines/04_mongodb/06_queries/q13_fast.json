@@ -1,0 +1,46 @@
+{
+  "//": [
+    "Q13 (fast) — Revenue by month: scan vs. summary table",
+    "What it answers: \"Total purchases and revenue for every month.\"",
+    "Route:           GET /stats/revenue_by_month/fast   (params: —; every route also takes db=)",
+    "Pattern:         counting_and_summaries",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "All of history: a COLLSCAN of every purchase, grouped by a month string",
+    "built per document. Compare Q13 and Q13 fast here and in the other engines.",
+    "Where is a summary collection worth the most?"
+  ],
+  "aggregate": "monthly_sales",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$group": {
+        "_id": "$month",
+        "num_purchases": {
+          "$sum": "$num_purchases"
+        },
+        "revenue": {
+          "$sum": "$revenue"
+        }
+      }
+    },
+    {
+      "$sort": {
+        "_id": 1
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "month": "$_id",
+        "num_purchases": 1,
+        "revenue": {
+          "$round": [
+            "$revenue",
+            2
+          ]
+        }
+      }
+    }
+  ]
+}

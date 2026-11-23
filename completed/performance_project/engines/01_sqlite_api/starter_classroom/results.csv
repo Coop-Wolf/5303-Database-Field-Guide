@@ -1,0 +1,109 @@
+query,db,median_ms,rows,plan
+Q01,noidx_10k,0.062,1,SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q02,noidx_10k,0.078,50,SCAN products
+Q03,noidx_10k,1.132,78,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q04,noidx_10k,1.261,100,SCAN pu | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR ORDER BY
+Q05,noidx_10k,0.96,1,SCAN purchases
+Q06,noidx_10k,2.301,10,CO-ROUTINE islands | CO-ROUTINE (subquery-4) | CO-ROUTINE days | SCAN purchases | USE TEMP B-TREE FOR DISTINCT | SCAN days | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-4) | SCAN islands | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q07,noidx_10k,1.729,20,CO-ROUTINE (subquery-3) | CO-ROUTINE spend | SCAN purchases | USE TEMP B-TREE FOR GROUP BY | SCAN spend | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-3) | USE TEMP B-TREE FOR ORDER BY
+Q08,noidx_10k,17.947,56,SCAN pr | CORRELATED SCALAR SUBQUERY 1 | SEARCH z USING AUTOMATIC PARTIAL COVERING INDEX (state_code=?) | BLOOM FILTER ON pu (product_id=?) | SEARCH pu USING AUTOMATIC COVERING INDEX (product_id=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?)
+Q09,noidx_10k,8.492,51,SCAN pu | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q10,noidx_10k,3.976,10,SCAN pu | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q11,noidx_10k,0.47,50,SCAN purchases
+Q11-fast,noidx_10k,0.105,50,SEARCH purchases USING INTEGER PRIMARY KEY (rowid>?)
+Q12,noidx_10k,1.397,10,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q12-fast,noidx_10k,0.095,10,SEARCH purchases USING INTEGER PRIMARY KEY (rowid=?)
+Q13,noidx_10k,4.217,32,SCAN purchases | USE TEMP B-TREE FOR GROUP BY
+Q13-fast,noidx_10k,1.762,32,SCAN monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1
+Q14,noidx_10k,6.55,0,CO-ROUTINE cube | SCAN pu | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | SCAN cube | USE TEMP B-TREE FOR ORDER BY
+Q14-fast,noidx_10k,0.47,0,SEARCH monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1 (month>? AND month<?) | USE TEMP B-TREE FOR ORDER BY
+Q01,idx_10k,0.078,1,SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q02,idx_10k,0.085,50,SCAN products
+Q03,idx_10k,0.685,78,SEARCH purchases USING INDEX idx_purchases_date_cust_amount (purchase_date>? AND purchase_date<?)
+Q04,idx_10k,1.171,100,SEARCH pu USING INDEX idx_purchases_customer (customer_id=?) | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR ORDER BY
+Q05,idx_10k,0.06,1,SEARCH purchases USING COVERING INDEX idx_purchases_department (department=?)
+Q06,idx_10k,2.859,10,CO-ROUTINE islands | CO-ROUTINE (subquery-4) | CO-ROUTINE days | SEARCH purchases USING INDEX idx_purchases_customer (customer_id=?) | USE TEMP B-TREE FOR DISTINCT | SCAN days | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-4) | SCAN islands | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q07,idx_10k,0.824,20,CO-ROUTINE (subquery-3) | CO-ROUTINE spend | SEARCH purchases USING COVERING INDEX idx_purchases_date_cust_amount (purchase_date>? AND purchase_date<?) | USE TEMP B-TREE FOR GROUP BY | SCAN spend | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-3) | USE TEMP B-TREE FOR ORDER BY
+Q08,idx_10k,3.684,56,SCAN pr | CORRELATED SCALAR SUBQUERY 1 | SEARCH pu USING INDEX idx_purchases_product (product_id=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q09,idx_10k,1.528,51,SCAN z USING INDEX idx_zipcodes_state | SEARCH c USING COVERING INDEX idx_customers_zipcode (zipcode=?) | SEARCH pu USING COVERING INDEX idx_purchases_cust_amount (customer_id=?) | USE TEMP B-TREE FOR ORDER BY
+Q10,idx_10k,1.048,10,SCAN pr | SEARCH pu USING COVERING INDEX idx_purchases_prod_amount (product_id=?) | USE TEMP B-TREE FOR ORDER BY
+Q11,idx_10k,0.497,50,SCAN purchases
+Q11-fast,idx_10k,0.131,50,SEARCH purchases USING INTEGER PRIMARY KEY (rowid>?)
+Q12,idx_10k,1.209,10,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q12-fast,idx_10k,0.096,10,SEARCH purchases USING INTEGER PRIMARY KEY (rowid=?)
+Q13,idx_10k,2.881,32,SCAN purchases USING COVERING INDEX idx_purchases_date_cust_amount | USE TEMP B-TREE FOR GROUP BY
+Q13-fast,idx_10k,1.451,32,SCAN monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1
+Q14,idx_10k,6.379,0,CO-ROUTINE cube | SEARCH pu USING INDEX idx_purchases_date_cust_amount (purchase_date>? AND purchase_date<?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | SCAN cube | USE TEMP B-TREE FOR ORDER BY
+Q14-fast,idx_10k,0.557,0,SEARCH monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1 (month>? AND month<?) | USE TEMP B-TREE FOR ORDER BY
+Q01,noidx_100k,0.088,1,SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q02,noidx_100k,0.093,50,SCAN products
+Q03,noidx_100k,10.717,100,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q04,noidx_100k,9.888,100,SCAN pu | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR ORDER BY
+Q05,noidx_100k,9.631,1,SCAN purchases
+Q06,noidx_100k,11.089,2,CO-ROUTINE islands | CO-ROUTINE (subquery-4) | CO-ROUTINE days | SCAN purchases | USE TEMP B-TREE FOR DISTINCT | SCAN days | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-4) | SCAN islands | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q07,noidx_100k,16.215,20,CO-ROUTINE (subquery-3) | CO-ROUTINE spend | SCAN purchases | USE TEMP B-TREE FOR GROUP BY | SCAN spend | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-3) | USE TEMP B-TREE FOR ORDER BY
+Q08,noidx_100k,120.99,100,SCAN pr | CORRELATED SCALAR SUBQUERY 1 | SEARCH z USING AUTOMATIC PARTIAL COVERING INDEX (state_code=?) | BLOOM FILTER ON pu (product_id=?) | SEARCH pu USING AUTOMATIC COVERING INDEX (product_id=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?)
+Q09,noidx_100k,103.523,51,SCAN pu | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q10,noidx_100k,59.829,10,SCAN pu | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q11,noidx_100k,4.536,50,SCAN purchases
+Q11-fast,noidx_100k,0.11,50,SEARCH purchases USING INTEGER PRIMARY KEY (rowid>?)
+Q12,noidx_100k,12.383,10,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q12-fast,noidx_100k,0.132,10,SEARCH purchases USING INTEGER PRIMARY KEY (rowid=?)
+Q13,noidx_100k,55.983,32,SCAN purchases | USE TEMP B-TREE FOR GROUP BY
+Q13-fast,noidx_100k,6.148,32,SCAN monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1
+Q14,noidx_100k,72.305,50,CO-ROUTINE cube | SCAN pu | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | SCAN cube | USE TEMP B-TREE FOR ORDER BY
+Q14-fast,noidx_100k,1.935,50,SEARCH monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1 (month>? AND month<?) | USE TEMP B-TREE FOR ORDER BY
+Q01,idx_100k,0.077,1,SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q02,idx_100k,0.086,50,SCAN products
+Q03,idx_100k,0.758,100,SEARCH purchases USING INDEX idx_purchases_date (purchase_date>? AND purchase_date<?)
+Q04,idx_100k,23.381,100,SEARCH pu USING INDEX idx_purchases_cust_amount (customer_id=?) | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR ORDER BY
+Q05,idx_100k,0.318,1,SEARCH purchases USING COVERING INDEX idx_purchases_department (department=?)
+Q06,idx_100k,26.806,2,CO-ROUTINE islands | CO-ROUTINE (subquery-4) | CO-ROUTINE days | SEARCH purchases USING INDEX idx_purchases_cust_amount (customer_id=?) | USE TEMP B-TREE FOR DISTINCT | SCAN days | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-4) | SCAN islands | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q07,idx_100k,7.818,20,CO-ROUTINE (subquery-3) | CO-ROUTINE spend | SEARCH purchases USING COVERING INDEX idx_purchases_date_cust_amount (purchase_date>? AND purchase_date<?) | USE TEMP B-TREE FOR GROUP BY | SCAN spend | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-3) | USE TEMP B-TREE FOR ORDER BY
+Q08,idx_100k,22.724,100,SCAN pr | CORRELATED SCALAR SUBQUERY 1 | SEARCH pu USING INDEX idx_purchases_prod_amount (product_id=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q09,idx_100k,13.117,51,SCAN z USING INDEX idx_zipcodes_state | SEARCH c USING COVERING INDEX idx_customers_zipcode (zipcode=?) | SEARCH pu USING COVERING INDEX idx_purchases_cust_amount (customer_id=?) | USE TEMP B-TREE FOR ORDER BY
+Q10,idx_100k,10.441,10,SCAN pr | SEARCH pu USING COVERING INDEX idx_purchases_prod_amount (product_id=?) | USE TEMP B-TREE FOR ORDER BY
+Q11,idx_100k,4.835,50,SCAN purchases
+Q11-fast,idx_100k,0.11,50,SEARCH purchases USING INTEGER PRIMARY KEY (rowid>?)
+Q12,idx_100k,12.463,10,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q12-fast,idx_100k,0.141,10,SEARCH purchases USING INTEGER PRIMARY KEY (rowid=?)
+Q13,idx_100k,40.286,32,SCAN purchases USING COVERING INDEX idx_purchases_date_cust_amount | USE TEMP B-TREE FOR GROUP BY
+Q13-fast,idx_100k,6.355,32,SCAN monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1
+Q14,idx_100k,225.958,50,CO-ROUTINE cube | SEARCH pu USING INDEX idx_purchases_date (purchase_date>? AND purchase_date<?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | SCAN cube | USE TEMP B-TREE FOR ORDER BY
+Q14-fast,idx_100k,1.97,50,SEARCH monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1 (month>? AND month<?) | USE TEMP B-TREE FOR ORDER BY
+Q01,noidx_1m,0.077,1,SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q02,noidx_1m,0.092,50,SCAN products
+Q03,noidx_1m,110.89,100,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q04,noidx_1m,90.573,100,SCAN pu | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR ORDER BY
+Q05,noidx_1m,91.231,1,SCAN purchases
+Q06,noidx_1m,84.537,1,CO-ROUTINE islands | CO-ROUTINE (subquery-4) | CO-ROUTINE days | SCAN purchases | USE TEMP B-TREE FOR DISTINCT | SCAN days | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-4) | SCAN islands | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q07,noidx_1m,165.739,20,CO-ROUTINE (subquery-3) | CO-ROUTINE spend | SCAN purchases | USE TEMP B-TREE FOR GROUP BY | SCAN spend | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-3) | USE TEMP B-TREE FOR ORDER BY
+Q08,noidx_1m,7333.833,100,SCAN pr | CORRELATED SCALAR SUBQUERY 1 | SEARCH z USING AUTOMATIC PARTIAL COVERING INDEX (state_code=?) | BLOOM FILTER ON pu (product_id=?) | SEARCH pu USING AUTOMATIC COVERING INDEX (product_id=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?)
+Q09,noidx_1m,3213.312,51,SCAN pu | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q10,noidx_1m,802.939,10,SCAN pu | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q11,noidx_1m,43.024,50,SCAN purchases
+Q11-fast,noidx_1m,0.117,50,SEARCH purchases USING INTEGER PRIMARY KEY (rowid>?)
+Q12,noidx_1m,122.755,10,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q12-fast,noidx_1m,0.172,10,SEARCH purchases USING INTEGER PRIMARY KEY (rowid=?)
+Q13,noidx_1m,663.181,32,SCAN purchases | USE TEMP B-TREE FOR GROUP BY
+Q13-fast,noidx_1m,7.285,32,SCAN monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1
+Q14,noidx_1m,1634.952,50,CO-ROUTINE cube | SCAN pu | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | SCAN cube | USE TEMP B-TREE FOR ORDER BY
+Q14-fast,noidx_1m,8.384,50,SEARCH monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1 (month>? AND month<?) | USE TEMP B-TREE FOR ORDER BY
+Q01,idx_1m,0.063,1,SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q02,idx_1m,0.085,50,SCAN products
+Q03,idx_1m,0.858,100,SEARCH purchases USING INDEX idx_purchases_date (purchase_date>? AND purchase_date<?)
+Q04,idx_1m,65.678,100,SEARCH pu USING INDEX idx_purchases_customer (customer_id=?) | SEARCH pr USING INTEGER PRIMARY KEY (rowid=?) | USE TEMP B-TREE FOR ORDER BY
+Q05,idx_1m,2.661,1,SEARCH purchases USING COVERING INDEX idx_purchases_department (department=?)
+Q06,idx_1m,67.237,1,CO-ROUTINE islands | CO-ROUTINE (subquery-4) | CO-ROUTINE days | SEARCH purchases USING INDEX idx_purchases_customer (customer_id=?) | USE TEMP B-TREE FOR DISTINCT | SCAN days | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-4) | SCAN islands | USE TEMP B-TREE FOR GROUP BY | USE TEMP B-TREE FOR ORDER BY
+Q07,idx_1m,84.779,20,CO-ROUTINE (subquery-3) | CO-ROUTINE spend | SEARCH purchases USING COVERING INDEX idx_purchases_date_cust_amount (purchase_date>? AND purchase_date<?) | USE TEMP B-TREE FOR GROUP BY | SCAN spend | USE TEMP B-TREE FOR ORDER BY | SCAN (subquery-3) | USE TEMP B-TREE FOR ORDER BY
+Q08,idx_1m,109.233,100,SCAN pr | CORRELATED SCALAR SUBQUERY 1 | SEARCH pu USING INDEX idx_purchases_product (product_id=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?)
+Q09,idx_1m,403.466,51,SCAN z USING INDEX idx_zipcodes_state | SEARCH c USING COVERING INDEX idx_customers_zipcode (zipcode=?) | SEARCH pu USING COVERING INDEX idx_purchases_cust_amount (customer_id=?) | USE TEMP B-TREE FOR ORDER BY
+Q10,idx_1m,102.961,10,SCAN pr | SEARCH pu USING COVERING INDEX idx_purchases_prod_amount (product_id=?) | USE TEMP B-TREE FOR ORDER BY
+Q11,idx_1m,46.503,50,SCAN purchases
+Q11-fast,idx_1m,0.118,50,SEARCH purchases USING INTEGER PRIMARY KEY (rowid>?)
+Q12,idx_1m,126.165,10,SCAN purchases | USE TEMP B-TREE FOR ORDER BY
+Q12-fast,idx_1m,0.174,10,SEARCH purchases USING INTEGER PRIMARY KEY (rowid=?)
+Q13,idx_1m,507.754,32,SCAN purchases USING COVERING INDEX idx_purchases_date_cust_amount | USE TEMP B-TREE FOR GROUP BY
+Q13-fast,idx_1m,6.523,32,SCAN monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1
+Q14,idx_1m,3943.048,50,CO-ROUTINE cube | SEARCH pu USING INDEX idx_purchases_date (purchase_date>? AND purchase_date<?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH z USING INDEX sqlite_autoindex_zipcodes_1 (zipcode=?) | USE TEMP B-TREE FOR GROUP BY | SCAN cube | USE TEMP B-TREE FOR ORDER BY
+Q14-fast,idx_1m,8.163,50,SEARCH monthly_sales USING INDEX sqlite_autoindex_monthly_sales_1 (month>? AND month<?) | USE TEMP B-TREE FOR ORDER BY

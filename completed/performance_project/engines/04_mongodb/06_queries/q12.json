@@ -1,0 +1,34 @@
+{
+  "//": [
+    "Q12 — Random sample: `ORDER BY random()` vs. random ids",
+    "What it answers: \"Give me 10 random purchases.\"",
+    "Route:           GET /purchases/sample   (params: —; every route also takes db=)",
+    "Pattern:         random_sampling",
+    "Engine:          MongoDB",
+    "Think about it:",
+    "$sample returned 10 random documents from 1,000,000 in well under a",
+    "millisecond. ORDER BY random() in SQLite needs every row. How does MongoDB",
+    "avoid reading them all, and is every document equally likely? (See the",
+    "random_sampling pattern.) What has to be true about _id for the fast version",
+    "to be fair?"
+  ],
+  "aggregate": "purchases",
+  "cursor": {},
+  "pipeline": [
+    {
+      "$sample": {
+        "size": 10
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "purchase_id": "$_id",
+        "customer_id": 1,
+        "product_id": 1,
+        "amount": 1,
+        "purchase_date": 1
+      }
+    }
+  ]
+}
