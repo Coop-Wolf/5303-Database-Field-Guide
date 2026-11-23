@@ -96,6 +96,10 @@ And two motivations that have nothing to do with speed:
 
 1. Write one paragraph: *what DuckDB is for, and the one situation where
    you'd still pick SQLite over it.*
+
+   I'd still pick SQLite over DuckDB when its for simple use becuase im more familiar with it.
+
+   
 2. **Predict, before you measure anything.** For each catalog query group,
    will DuckDB be faster, slower, or about the same as SQLite (indexed, at
    1m)? Keep this; [§7](../07_explain/) checks it.

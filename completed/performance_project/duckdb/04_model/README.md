@@ -132,7 +132,7 @@ purchase with its customer, state, product, and card type already joined in.
 No joins at query time. In SQLite, that design repeats every customer's name
 and address on every purchase, and the file balloons.
 
-Does that argument still hold in a column store? Test it.
+Does that argument still hold in a column store? No.
 
 ### B1. Predict first
 
