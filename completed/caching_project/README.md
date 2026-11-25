@@ -1,9 +1,5 @@
 # Redis Caching
 
-## Environment
-
-Windows, Python 3.11.9, Redis 8.1.0, Docker 29.0.1
-
 
 ## Caching Strategies Implemented
 
@@ -21,6 +17,14 @@ The /leaderboard/dict-cache endpoint stores results in a Python dictionary insid
 
 Using Redis was beneficial under certain conditions. It worked well when the queries were expensive and the TTL was 30 or 60 seconds. It was near meaningless when the queries was simple.
 
+## Environment
+
+| Component | Version |
+|-----------|---------|
+| Operating system | Windows |
+| Python | 3.11.9 |
+| Redis | 8.1.0 |
+| Docker | 29.0.1 |
 
 ## How to Run
 
