@@ -1,6 +1,7 @@
 ## DESCRIBE vs. .schema
-One difference between `DESCRIBE purchases` here and `.schema purchases`
-in SQLite.
+
+
+### What are the differences between `DESCRIBE purchases` and `.schema purchases` in SQLite
 
 DESCRIBE purchaces in DuckDB returns the structure of a table, including column names, and data types.
 
