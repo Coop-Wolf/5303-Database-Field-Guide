@@ -1,7 +1,7 @@
 # Assignments
 
-| ID | Title | Units |
-| -- | ----- | ----- |
-| final_project | Choose the Right Database | all |
-
-_Status: stub — content to be added._
+| ID | Title | 
+| -- | ----- |
+| Performance Project | SQLite VS DuckDB |
+| Caching Project | Using Redis |
+| Clear_JSON_Returns | Returning Clean JSON format |
