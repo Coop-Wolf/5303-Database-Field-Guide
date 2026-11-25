@@ -1,0 +1,2 @@
+test,endpoint,ttl_seconds,requests,target_requests_per_second,elapsed_seconds,average_latency_ms,minimum_latency_ms,maximum_latency_ms,p95_latency_ms,actual_requests_per_second,cache_hits,cache_misses,cache_errors,http_errors
+A - Database Baseline,/leaderboard/no-cache,,100,10,227.8982,2278.948,2224.9718,2345.4606,2306.815,0.4388,0,0,0,0

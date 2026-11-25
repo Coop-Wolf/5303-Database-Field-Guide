@@ -1,0 +1,2 @@
+test,endpoint,ttl_seconds,requests,target_requests_per_second,elapsed_seconds,average_latency_ms,minimum_latency_ms,maximum_latency_ms,p95_latency_ms,actual_requests_per_second,cache_hits,cache_misses,cache_errors,http_errors
+B - Redis Cache,/leaderboard/cached?ttl=30,30,100,10,207.9688,2079.6235,2032.6782,2300.2308,2272.176,0.4808,93,7,0,0

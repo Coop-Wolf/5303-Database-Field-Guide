@@ -1,0 +1,5 @@
+test,endpoint,ttl_seconds,requests,target_requests_per_second,elapsed_seconds,average_latency_ms,minimum_latency_ms,maximum_latency_ms,p95_latency_ms,actual_requests_per_second,cache_hits,cache_misses,cache_errors,http_errors
+C - Redis TTL 5s,/leaderboard/cached?ttl=5,5,100,10,213.5166,2135.1083,2013.1111,2331.3532,2294.6718,0.4683,66,34,0,0
+C - Redis TTL 30s,/leaderboard/cached?ttl=30,30,100,10,207.1248,2071.1981,2018.8515,2307.9434,2266.8327,0.4828,93,7,0,0
+C - Redis TTL 60s,/leaderboard/cached?ttl=60,60,100,10,206.5394,2065.3569,2010.7033,2275.0118,2085.8376,0.4842,96,4,0,0
+E - Redis Frequent Misses,/leaderboard/cached?ttl=30,30,100,10,10653.663,106535.825,2242.6186,10427008.7666,2319.3157,0.0094,0,100,0,0

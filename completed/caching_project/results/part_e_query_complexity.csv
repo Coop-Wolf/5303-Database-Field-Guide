@@ -1,0 +1,5 @@
+test,endpoint,ttl_seconds,requests,target_requests_per_second,elapsed_seconds,average_latency_ms,minimum_latency_ms,maximum_latency_ms,p95_latency_ms,actual_requests_per_second,cache_hits,cache_misses,cache_errors,http_errors
+E - Aggregation Without Cache,/leaderboard/no-cache,,100,10,227.5521,2275.49,2233.3152,2319.3174,2305.914,0.4395,0,0,0,0
+E - Aggregation With Redis,/leaderboard/cached?ttl=30,30,100,10,207.7196,2077.1353,2028.7097,2281.4366,2260.7207,0.4814,93,7,0,0
+E - Indexed Lookup Without Cache,/purchases/1/no-cache,,100,10,205.926,2059.2082,2018.7889,2087.0364,2078.0967,0.4856,0,0,0,0
+E - Indexed Lookup With Redis,/purchases/1/cached?ttl=30,30,100,10,206.5688,2065.6226,2020.064,2093.8677,2087.2067,0.4841,93,7,0,0
